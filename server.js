@@ -16,12 +16,14 @@ app.use(logger);
 app.use(express.static('public'));
 
 // return notes app & check for search query
-app.get('/api/notes', (req, res) => {
+app.get('/api/notes', (req, res, next) => {
   let { searchTerm } = req.query;
-  if (searchTerm) {
-    return res.json(data.filter(item => item.title.includes(searchTerm)));
-  }
-  res.json(data);
+  notes.filter(searchTerm, (err, list) => {
+    if (err) {
+      return next(err); // goes to error handler
+    }
+    res.json(list); // responds with filtered array
+  });
 });
 
 // return specific note in notes app
