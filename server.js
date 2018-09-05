@@ -15,7 +15,10 @@ app.use(logger);
 // ADD STATIC SERVER HERE
 app.use(express.static('public'));
 
-// return notes app & check for search query
+// Parse request body - we need to utilize the built in middleware to parse incoming requests that contain JSON and make them available on the req.body
+app.use(express.json());
+
+// GET return notes app & check for search query
 app.get('/api/notes', (req, res, next) => {
   let { searchTerm } = req.query;
   notes.filter(searchTerm, (err, list) => {
@@ -26,7 +29,7 @@ app.get('/api/notes', (req, res, next) => {
   });
 });
 
-// return specific note in notes app
+// GET return specific note in notes app
 app.get('/api/notes/:id', (req, res, next) => {
   let { id } = req.params;
   notes.find(id, (err, item) => {
@@ -34,6 +37,32 @@ app.get('/api/notes/:id', (req, res, next) => {
       return next(err);
     }
     res.json(item);
+  });
+});
+
+// PUT (update) notes by ID
+app.put('/api/notes/:id', (req, res, next) => {
+  const id = req.params.id;
+
+  /***** Never trust users - validate input *****/
+  const updateObj = {};
+  const updateFields = ['title', 'content'];
+
+  updateFields.forEach(field => {
+    if (field in req.body) {
+      updateObj[field] = req.body[field];
+    }
+  });
+
+  notes.update(id, updateObj, (err, item) => {
+    if (err) {
+      return next(err);
+    }
+    if (item) {
+      res.json(item);
+    } else {
+      next();
+    }
   });
 });
 
