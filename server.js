@@ -1,9 +1,11 @@
 'use strict';
 
 const express = require('express');
+
 const data = require('./db/notes');
 const simDB = require('./db/simDB');
 const notes = simDB.initialize(data);
+
 const { logger } = require('./middleware/logger');
 const { PORT } = require('./config');
 
@@ -20,7 +22,7 @@ app.use(express.json());
 
 // GET return notes app & check for search query
 app.get('/api/notes', (req, res, next) => {
-  let { searchTerm } = req.query;
+  const { searchTerm } = req.query;
   notes.filter(searchTerm, (err, list) => {
     if (err) {
       return next(err); // goes to error handler
@@ -31,18 +33,22 @@ app.get('/api/notes', (req, res, next) => {
 
 // GET return specific note in notes app
 app.get('/api/notes/:id', (req, res, next) => {
-  let { id } = req.params;
+  const { id } = req.params;
   notes.find(id, (err, item) => {
     if (err) {
       return next(err);
     }
-    res.json(item);
+    if (item) {
+      res.json(item);
+    } else {
+      next();
+    }
   });
 });
 
 // PUT (update) notes by ID
 app.put('/api/notes/:id', (req, res, next) => {
-  const id = req.params.id;
+  const { id } = req.params;
 
   /***** Never trust users - validate input *****/
   const updateObj = {};
@@ -66,19 +72,19 @@ app.put('/api/notes/:id', (req, res, next) => {
   });
 });
 
-//test
+//test - brute-force test
 app.get('/boom', (req, res, next) => {
   throw new Error('Boom!!');
 });
 
-// Error handling
+// Catch all 404
 app.use(function(req, res, next) {
-  var err = new Error('Not Found');
+  const err = new Error('Not Found');
   err.status = 404;
-  res.status(404).json({ message: 'Not Found' });
+  next(err);
 });
 
-// check error
+// Catch all error handler
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.json({
