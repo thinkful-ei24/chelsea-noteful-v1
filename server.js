@@ -27,17 +27,26 @@ app.get('/api/notes', (req, res, next) => {
 });
 
 // return specific note in notes app
-app.get('/api/notes/:id', (req, res) => {
-  //written out way
-  // let id = req.params.id;
-  // short hand
+app.get('/api/notes/:id', (req, res, next) => {
   let { id } = req.params;
-  res.json(data.find(item => item.id === Number(id)));
+  notes.find(id, (err, item) => {
+    if (err) {
+      return next(err);
+    }
+    res.json(item);
+  });
 });
 
 //test
 app.get('/boom', (req, res, next) => {
   throw new Error('Boom!!');
+});
+
+// Error handling
+app.use(function(req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  res.status(404).json({ message: 'Not Found' });
 });
 
 // check error
@@ -47,13 +56,6 @@ app.use(function(err, req, res, next) {
     message: err.message,
     error: err
   });
-});
-
-// Error handling
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  res.status(404).json({ message: 'Not Found' });
 });
 
 app
