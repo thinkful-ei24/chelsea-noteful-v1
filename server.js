@@ -1,13 +1,16 @@
 'use strict';
 
 const express = require('express');
-
 const data = require('./db/notes');
+const { logger } = require('./middleware/logger');
+const { PORT } = require('./config');
 
 const app = express();
 
-// ADD STATIC SERVER HERE
+// run logger
+app.use(logger);
 
+// ADD STATIC SERVER HERE
 app.use(express.static('public'));
 
 // return notes app & check for search query
@@ -29,7 +32,7 @@ app.get('/api/notes/:id', (req, res) => {
 });
 
 app
-  .listen(8080, function() {
+  .listen(PORT, function() {
     console.info(`Server listening on ${this.address().port}`);
   })
   .on('error', err => {
