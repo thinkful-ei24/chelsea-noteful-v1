@@ -1,16 +1,23 @@
 'use strict';
 
+//express
 const express = require('express');
+
+//data
 const data = require('./db/notes');
 const simDB = require('./db/simDB');
 const notes = simDB.initialize(data);
-const { logger } = require('./middleware/logger');
+
+//3rd party middleware
+const morgan = require('morgan');
+
+//my modules
 const { PORT } = require('./config');
 
 const app = express();
 
-// run logger
-app.use(logger);
+// run morgan logger
+app.use(morgan('dev'));
 
 // ADD STATIC SERVER HERE
 app.use(express.static('public'));
